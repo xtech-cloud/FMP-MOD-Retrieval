@@ -1,0 +1,19 @@
+
+/_dist_/
+/_build_/
+/Retrieval/Assets/TextMesh Pro/
+/Retrieval/Assets/TextMesh Pro.meta
+/Retrieval/Assets/Plugins/
+/Retrieval/Assets/Plugins.meta
+/Retrieval/Assets/3rd/
+/Retrieval/Assets/3rd.meta
+/Retrieval/Library/
+/Retrieval/obj/
+/Retrieval/Logs/
+/Retrieval/Temp/
+/Retrieval/UserSettings/
+/Retrieval/*.sln
+/Retrieval/*.csproj
+/Retrieval/.vsconfig
+/Retrieval/.vs/
+/.UNITY_HOME.env
