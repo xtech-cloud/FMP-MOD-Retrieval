@@ -154,6 +154,11 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
                 switchToSearchPage();
             });
             uiReference_.pageRecord.btnShowMore.gameObject.SetActive(false);
+            rootUI.transform.Find("title").GetComponent<Button>().onClick.AddListener(() =>
+            {
+                pauseResetTimer();
+                reset();
+            });
         }
 
         /// <summary>
