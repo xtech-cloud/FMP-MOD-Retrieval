@@ -114,7 +114,7 @@
       style: 使用的样式名
     -->
   <Instances>
-    <Instance uid="default" style="default"/>
+    <Instance uid="default" style="default" uiSlot=""/>
   </Instances>
   <!-- 预加载 -->
   <Preload>

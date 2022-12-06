@@ -621,10 +621,11 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
 
         private IEnumerator playRecord(DummyModel.Record _record, float _delay)
         {
+            Dictionary<string, object> variableS = new Dictionary<string, object>();
             //关闭所有播放器
             foreach (var e in style_.processor.filters)
             {
-                publishSubjects(e.stopSubjects);
+                publishSubjects(e.stopSubjects, variableS);
             }
             // 播放器的关闭会延迟一帧处理
             yield return new UnityEngine.WaitForEndOfFrame();
@@ -637,7 +638,8 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
                 logger_.Error("filter not found, record is format:{0}", _record.format);
                 yield break;
             }
-            publishSubjects(filter.playSubjects);
+            variableS["{{uri}}"] = _record.uri;
+            publishSubjects(filter.playSubjects, variableS);
         }
 
         private MyConfig.Filter findFilter(DummyModel.Record _record)
@@ -649,37 +651,6 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
             }
             return null;
         }
-
-
-        /// <summary>
-        /// 发布预加载中的主题
-        /// </summary>
-        protected void publishSubjects(MyConfig.Subject[] _subjects)
-        {
-            foreach (var subject in _subjects)
-            {
-                var data = new Dictionary<string, object>();
-                foreach (var parameter in subject.parameters)
-                {
-                    if (parameter.type.Equals("string"))
-                        data[parameter.key] = parameter.value;
-                    else if (parameter.type.Equals("int"))
-                        data[parameter.key] = int.Parse(parameter.value);
-                    else if (parameter.type.Equals("float"))
-                        data[parameter.key] = float.Parse(parameter.value);
-                    else if (parameter.type.Equals("bool"))
-                        data[parameter.key] = bool.Parse(parameter.value);
-                }
-                logger_.Trace("publish {0}", subject.message);
-                (entry_ as MyEntry).getDummyModel().Publish(subject.message, data);
-            }
-        }
-
-
-
-
-
-
 
         #region Records
         //TODO move to mvcs.dll

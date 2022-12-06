@@ -48,6 +48,8 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
         {
             [XmlAttribute("name")]
             public string name { get; set; } = "";
+            [XmlAttribute("slot")]
+            public string slot { get; set; } = "";
             [XmlElement("ResultPage")]
             public ResultPage resultPage { get; set; }
             [XmlElement("Processor")]
@@ -56,7 +58,6 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
             public ResetTimer resetTimer { get; set; }
 
         }
-
 
         [XmlArray("Styles"), XmlArrayItem("Style")]
         public Style[] styles { get; set; } = new Style[0];
