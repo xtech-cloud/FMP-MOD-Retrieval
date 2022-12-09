@@ -11,6 +11,7 @@ using System.Collections;
 using XTC.FMP.LIB.MVCS;
 using System.IO;
 using System.Linq;
+using System;
 
 namespace XTC.FMP.MOD.Retrieval.LIB.Unity
 {
@@ -30,6 +31,9 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
                 public RectTransform listItemTemplate;
             }
 
+            public RawImage pageHomeBackground;
+            public RawImage pageRecordBackground;
+            public Image pageHomeMask;
             public InputField input;
             public RectTransform recordTemplate;
             public RectTransform pageTemplate;
@@ -44,6 +48,10 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
             public Button tabDocument;
             public GameObject tipNotFound;
             public PageRecord pageRecord = new PageRecord();
+
+            public List<Button> keyS = new List<Button>();
+
+            public Color primaryColor = Color.white;
         }
 
         private UiReference uiReference_ = new UiReference();
@@ -68,6 +76,13 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
                 parseDisk(style_.processor.uri, style_);
             }
 
+            uiReference_.pageHomeMask = rootUI.transform.Find("mask").GetComponent<Image>();
+            uiReference_.pageHomeMask.gameObject.SetActive(style_.pageHomeMask.visible);
+            uiReference_.pageHomeBackground = rootUI.transform.Find("background").GetComponent<RawImage>();
+            uiReference_.pageHomeBackground.gameObject.SetActive(style_.pageHomeBackground.visible);
+            uiReference_.pageRecordBackground = rootUI.transform.Find("pageRecord").GetComponent<RawImage>();
+            uiReference_.pageRecordBackground.gameObject.SetActive(style_.pageRecordBackground.visible);
+
             uiReference_.input = rootUI.transform.Find("InputField").GetComponent<InputField>();
             var btnInputClickArea = rootUI.transform.Find("inputClickArea").GetComponent<Button>();
             btnInputClickArea.onClick.AddListener(() =>
@@ -75,9 +90,9 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
                 rewindResetTimer();
                 rootUI.GetComponent<Animator>().SetTrigger("on");
             });
-            bindKeyEvents("keyboard/line1");
-            bindKeyEvents("keyboard/line2");
-            bindKeyEvents("keyboard/line3");
+
+            uiReference_.keyS.AddRange(rootUI.transform.Find("keyboard").GetComponentsInChildren<Button>());
+
             uiReference_.recordTemplate = rootUI.transform.Find("panel-result/records/record").GetComponent<RectTransform>();
             uiReference_.recordTemplate.gameObject.SetActive(false);
             uiReference_.pageTemplate = rootUI.transform.Find("panel-result/page/indexs/index").GetComponent<RectTransform>();
@@ -159,6 +174,80 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
                 pauseResetTimer();
                 reset();
             });
+
+            Func<string, Color> convertColor = (_color) =>
+            {
+                Color color = Color.white;
+                ColorUtility.TryParseHtmlString(_color, out color);
+                return color;
+            };
+            uiReference_.primaryColor = convertColor(style_.primaryColor);
+            uiReference_.pageRecord.listItemTemplate.Find("Checkmark").GetComponent<Image>().color = convertColor(style_.recordSideMenu.selectedColor);
+            rootUI.transform.Find("title").GetComponent<RawImage>().color = uiReference_.primaryColor;
+            uiReference_.input.GetComponent<Image>().color = uiReference_.primaryColor;
+            uiReference_.input.transform.Find("icon").GetComponent<Image>().color = uiReference_.primaryColor;
+            uiReference_.pageHomeMask.color = convertColor(style_.pageHomeMask.color);
+            uiReference_.tabAll.transform.Find("Checkmark").GetComponent<Image>().color = uiReference_.primaryColor;
+            uiReference_.tabImage.transform.Find("Checkmark").GetComponent<Image>().color = uiReference_.primaryColor;
+            uiReference_.tabVideo.transform.Find("Checkmark").GetComponent<Image>().color = uiReference_.primaryColor;
+            uiReference_.tabDocument.transform.Find("Checkmark").GetComponent<Image>().color = uiReference_.primaryColor;
+
+            Action<string, RawImage> loadTheme = (_image, _target) =>
+            {
+                if (!string.IsNullOrEmpty(_image))
+                {
+                    loadTextureFromTheme(_image, (_texture) =>
+                    {
+                        _target.texture = _texture;
+                    }, () =>
+                    {
+                    });
+                }
+            };
+            loadTheme(style_.recordSideMenu.titleImage, uiReference_.pageRecord.txtTag.transform.parent.GetComponent<RawImage>());
+            loadTheme(style_.pageHomeBackground.image, uiReference_.pageHomeBackground);
+            loadTheme(style_.pageRecordBackground.image, uiReference_.pageRecordBackground);
+            loadTheme(style_.keyboard.image, rootUI.transform.Find("keyboard").GetComponent<RawImage>());
+            // 加载按键图片
+            if (!string.IsNullOrEmpty(style_.keyboard.keyImage))
+            {
+                loadTextureFromTheme(style_.keyboard.keyImage, (_texture) =>
+                {
+                    Sprite sprite = Sprite.Create(_texture, new Rect(0, 0, _texture.width, _texture.height), new Vector2(0.5f, 0.5f));
+                    foreach (Button key in uiReference_.keyS)
+                    {
+                        key.GetComponent<Image>().sprite = sprite;
+                    }
+                }, () =>
+                {
+                });
+            }
+
+            foreach (Button key in uiReference_.keyS)
+            {
+                key.onClick.AddListener(() =>
+                {
+                    rewindResetTimer();
+                    if (key.gameObject.name.Equals("back"))
+                    {
+                        uiReference_.input.text = uiReference_.input.text.Length > 0 ? uiReference_.input.text.Substring(0, uiReference_.input.text.Length - 1) : "";
+                    }
+                    else if (key.gameObject.name.Equals("clear"))
+                    {
+                        uiReference_.input.text = "";
+                    }
+                    else if (uiReference_.input.text.Length < 24)
+                    {
+                        uiReference_.input.text += key.gameObject.name;
+                    }
+                    else
+                    {
+                        return;
+                    }
+                    searchFromLocalFiles(uiReference_.input.text);
+                });
+            }
+
         }
 
         /// <summary>
@@ -208,36 +297,6 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
             if (null != coroutineResetTimerTick_)
                 return;
             coroutineResetTimerTick_ = mono_.StartCoroutine(tickResetTimer());
-        }
-
-
-        private void bindKeyEvents(string _container)
-        {
-            foreach (Transform child in rootUI.transform.Find(_container))
-            {
-                var btnKey = child.gameObject.GetComponent<Button>();
-                btnKey.onClick.AddListener(() =>
-                {
-                    rewindResetTimer();
-                    if (btnKey.gameObject.name.Equals("back"))
-                    {
-                        uiReference_.input.text = uiReference_.input.text.Length > 0 ? uiReference_.input.text.Substring(0, uiReference_.input.text.Length - 1) : "";
-                    }
-                    else if (btnKey.gameObject.name.Equals("clear"))
-                    {
-                        uiReference_.input.text = "";
-                    }
-                    else if (uiReference_.input.text.Length < 24)
-                    {
-                        uiReference_.input.text += btnKey.gameObject.name;
-                    }
-                    else
-                    {
-                        return;
-                    }
-                    searchFromLocalFiles(uiReference_.input.text);
-                });
-            }
         }
 
         private void activateTab(Button _tab)
@@ -410,6 +469,7 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
                 clone.name = i.ToString();
                 clone.transform.Find("Label").GetComponent<UnityEngine.UI.Text>().text = (i + 1).ToString();
                 clone.gameObject.SetActive(i < style_.resultPage.button);
+                clone.transform.Find("Background/Checkmark").GetComponent<Image>().color = uiReference_.primaryColor;
                 var button = clone.GetComponent<UnityEngine.UI.Button>();
                 button.onClick.AddListener(() =>
                 {

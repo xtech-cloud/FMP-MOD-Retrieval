@@ -13,7 +13,15 @@
     name: 名称
   -->
   <Styles>
-    <Style name="default">
+    <Style name="default" primaryColor="#49DDE4FF" >
+      <PageHomeMask visible="true" color="#00020799"/>
+      <PageHomeBackground visible="true" image="pagehome_background_default.png"/>
+      <PageRecordBackground visible="true" image="pagerecord_background_default.png"/>
+      <!-- 键盘
+        image: 键盘图片，大小为（1024x280）
+        keyImage: 按键图片
+      -->
+      <Keyboard image="keyboard_default.png" keyImage="key_default.png"/>
       <!-- 结果页
         capacity: 一页中显示的记录的数量
         button: 一栏显示的页码按钮的数量
@@ -23,6 +31,13 @@
         timeout: 超时时间，单位秒
       -->
       <ResetTimer timeout="60"/>
+      <!-- 检索记录的侧边栏菜单
+        selectedColor: 选中的颜色
+        titleImage: 标题图片，大小为（420x100）
+      -->
+      <RecordSideMenu selectedColor="#49DDE466" titleImage="sidemenu_title_default.png">
+
+      </RecordSideMenu>
       <!-- 检索处理器 
         source: 数据源，可选值为file://, assloud://
         uri:  地址
