@@ -438,16 +438,13 @@ namespace XTC.FMP.MOD.Retrieval.LIB.Unity
         private void switchToSearchPage()
         {
             uiReference_.pageRecord.root.GetComponent<UnityEngine.Animator>().SetTrigger("off");
-            /*
+
+            Dictionary<string, object> variableS = new Dictionary<string, object>();
             //关闭所有播放器
-            foreach (var e in config.processor.filters)
+            foreach (var e in style_.processor.filters)
             {
-                var opt = new Dictionary<string, object>();
-                opt["uid"] = e.playerId;
-                string strAction = string.Format("/{0}/Stop", e.playerModule);
-                model.Broadcast(strAction, opt);
+                publishSubjects(e.stopSubjects, variableS);
             }
-            */
         }
 
         /// <summary>
